@@ -7,4 +7,4 @@ Feature: Access a non-existing resource
     When I GET a non-existing resource
     Then the http status should be 404
     And the message should equal "Not Found"
-    And the documentation_url should equal "http://developer.github.com/v3"
+    And the documentation_url should equal "https://developer.github.com/v3"

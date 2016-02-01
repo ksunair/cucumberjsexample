@@ -36,6 +36,7 @@ var GithubStepsWrapper = function () {
     /* jshint -W116 */
     if (this.lastResponse.statusCode != status) {
     /* jshint +W116 */
+      callback &&
       callback.fail('The last http response did not have the expected ' +
         'status, expected ' + status + ' but got ' +
         this.lastResponse.statusCode)
@@ -50,7 +51,9 @@ var GithubStepsWrapper = function () {
     if (!assertPropertyIs(this.lastResponse, key, expectedValue, callback)) {
       return
     }
-    callback()
+    if (callback) {
+        callback();
+    }
   })
 
   // Check if a substring is contained in a certain property of the response
@@ -60,11 +63,12 @@ var GithubStepsWrapper = function () {
         callback)) {
       return
     }
-    callback()
+    callback && callback()
   })
 
   function assertResponse(lastResponse, callback) {
     if (!lastResponse) {
+        callback &&
       callback.fail(new Error('No request has been made until now.'))
       return false
     }
@@ -74,6 +78,7 @@ var GithubStepsWrapper = function () {
   function assertBody(lastResponse, callback) {
     if (!assertResponse(lastResponse, callback)) { return false }
     if (!lastResponse.body) {
+        callback &&
       callback.fail(new Error('The response to the last request had no body.'))
       return null
     }
@@ -88,6 +93,7 @@ var GithubStepsWrapper = function () {
     try {
       return JSON.parse(body)
     } catch (e) {
+        callback &&
       callback.fail(
         new Error('The body of the last response was not valid JSON.'))
       return null
@@ -107,11 +113,13 @@ var GithubStepsWrapper = function () {
       var matches = jsonPath(object, key)
       if (matches.length === 0) {
         // no match
-        callback.fail('The last response did not have the property: ' +
-          key + '\nExpected it to be\n' + expectedValue)
+        callback &&
+        callback(new Error('The last response did not have the property: ' +
+          key + '\nExpected it to be\n' + expectedValue));
         return null
       } else if (matches.length > 1) {
         // ambigious match
+        callback &&
         callback.fail('JSONPath expression ' + key + ' returned more than ' +
           'one match in object:\n' + JSON.stringify(object))
         return null
@@ -121,6 +129,7 @@ var GithubStepsWrapper = function () {
       }
     }
     if (property == null) {
+        callback &&
       callback.fail('The last response did not have the property ' +
         key + '\nExpected it to be\n' + expectedValue)
       return null
@@ -132,9 +141,10 @@ var GithubStepsWrapper = function () {
     var value = assertPropertyExists(lastResponse, key, expectedValue, callback)
     if (!value) { return false }
     if (value !== expectedValue) {
-      callback.fail('The last response did not have the expected content in ' +
+        callback &&
+      callback(new Error('The last response did not have the expected content in ' +
         'property ' + key + '. ' + 'Got:\n\n' + value + '\n\nExpected:\n\n' +
-        expectedValue)
+        expectedValue));
       return false
     }
     return true
@@ -144,6 +154,7 @@ var GithubStepsWrapper = function () {
     var value = assertPropertyExists(lastResponse, key, expectedValue, callback)
     if (!value) { return false }
     if (value.indexOf(expectedValue) === -1) {
+        callback &&
       callback.fail('The last response did not have the expected content in ' +
         'property ' + key + '. ' +
         'Got:\n\n' + value + '\n\nExpected it to contain:\n\n' + expectedValue)

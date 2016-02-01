@@ -12,14 +12,15 @@ var World = function World(callback) {
 
   this.get = function(path, callback) {
     var uri = this.uri(path)
+    console.log(uri);
     request.get({url: uri, headers: {'User-Agent': 'request'}},
         function(error, response) {
       if (error) {
-        return callback.fail(new Error('Error on GET request to ' + uri +
+        return callback(new Error('Error on GET request to ' + uri +
           ': ' + error.message))
       }
       self.lastResponse = response
-      callback()
+      callback && callback()
     })
   }
 
@@ -98,7 +99,9 @@ var World = function World(callback) {
     return env.BASE_URL + path
   }
 
-  callback()
+  if (callback) {
+      callback();
+  }
 }
 
 exports.World = World
